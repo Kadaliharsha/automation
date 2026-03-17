@@ -2,12 +2,7 @@
 
 ## Executive Summary
 
-**Project**: Automated validation of Salesforce Part Request test executions in Jama Connect  
-**Developer**: Harshavardhan  
-**Project Manager**: Rohan  
-**Timeline**: 1 month initial monitoring period  
-**Target**: Automate 5+ test scripts in first month  
-
+**Project**: Automated validation of Salesforce Part Request test executions in Jama Connect
 ---
 
 ## What This Automation Does
