@@ -1,316 +1,62 @@
-# JAMA TEST VALIDATION AUTOMATION - PROJECT SUMMARY
+# Jama Connect Test Validation Automation
 
-**Project**: Automated validation of Salesforce Part Request test executions in Jama Connect
----
+An enterprise-grade automation framework designed to validate Jama Connect test execution results against objective evidence and expected outcomes. This solution focuses on reducing manual verification effort, ensuring data integrity, and maintaining regulatory compliance.
 
-### Problem Statement
-Manual validation of test execution results is:
-- Time-consuming (checking each action vs expected vs actual)
-- Error-prone (missing mismatches in screenshots)
-- Tedious (verifying timestamps, WO numbers, URLs)
-- Difficult to scale (100s of test steps per script)
+## Overview
 
-### Solution
-Automated Python framework that:
-1. **Validates Action-Expected-Actual alignment** using keyword matching
-2. **Extracts data from screenshots** using OCR/AI Vision (URLs, timestamps, WO#, tester IDs)
-3. **Checks sequential order** ensuring test steps executed chronologically
-4. **Generates detailed reports** highlighting all mismatches and violations
----
-### Core Files Provided
+The framework processes Excel exports from Jama Cloud to perform automated cross-verification between test instructions (Actions), expected results, and actual recorded outcomes. It provides a detailed audit trail by mapping specific terminology and verifying UI context across the test execution lifecycle.
 
-1. **jama_test_validator.py** (330 lines)
-   - Main validation engine
-   - TestStep and ExtractedScreenshotData data classes
-   - Action-result matching logic
-   - Timestamp sequence validation
-   - Report generation
+## Core Features
 
-2. **screenshot_analyzer.py** (270 lines)
-   - OCR extraction using Tesseract
-   - AI Vision integration (Claude/GPT-4)
-   - Regex-based data extraction
-   - URL, WO#, timestamp, tester ID parsing
-   - Screenshot completeness validation
+### 1. Multi-Dimensional Traceability
+The engine maintains strict traceability by tracking and verifying unique identifiers across all steps:
+*   Test Run ID (Execution Instance)
+*   Test Case ID (Design Blueprint)
+*   Requirement ID (Originating Business Logic)
 
-3. **run_validation_example.py** (330 lines)
-   - Complete end-to-end demo
-   - Sample test cases
-   - Sequence violation example
-   - Usage guide and documentation
+### 2. Word-to-Word Mapping
+Moves beyond simple pass/fail status by performing keyword extraction and mapping:
+*   Identifies core nouns and verbs within the 'Action' column.
+*   Verifies the presence of these terms in both 'Expected' and 'Actual' result columns.
+*   Generates an audit trail of mapped keywords for compliance review.
 
-4. **README.md**
-   - Comprehensive installation guide
-   - Usage examples
-   - Troubleshooting tips
-   - Project roadmap
+### 3. UI Context Verification (Tab Sequence Tracking)
+Ensures tests were performed in the correct system area:
+*   Extracts UI context (e.g., "Details Tab", "Related List") from instructions.
+*   Verifies focused UI state against user-provided evidence.
+*   Detects navigation anomalies and out-of-sequence screenshots.
 
-5. **validation_report.json**
-   - Sample output report
-   - Shows pass/fail status
-   - Lists all validation notes
-   - Highlights sequence violations
+### 4. Data Integrity Auditing
+Automated checks for recurring data points:
+*   **Timestamp Sequencing**: Validates chronological execution order across steps.
+*   **Variable Verification**: Cross-references identifiers like Work Order numbers, Tester IDs, and Environment URLs between textual results and evidence data.
 
----
+## Project Structure
 
-## Key Validation Checks
+*   `validation_engine.py`: Core logic for text normalization, keyword extraction, and score calculation.
+*   `evidence_extractor.py`: Module for data extraction from objective evidence (supports simulated data and OCR integration).
+*   `run_automation.py`: Main execution entry point; handles data ingestion, orchestration, and report generation.
+*   `setup_mock_data.py`: Utility for generating standardized Jama-format test data for validation purposes.
 
-### 1. Action-Expected-Actual Matching
-```
-✓ Extracts keywords from Action
-✓ Verifies keywords appear in Expected Result
-✓ Verifies keywords appear in Actual Result
-✗ Flags if any mismatch detected
-```
+## Installation
 
-### 2. Screenshot Data Validation
-```
-✓ Salesforce URL matches actual result claim
-✓ Tester ID matches actual result claim
-✓ Work Order number matches actual result claim
-✓ Timestamp present in screenshot
-✗ Flags any data mismatches
-```
+The solution requires Python 3.8+ and the following dependencies:
 
-### 3. Timestamp Sequence Validation
-```
-✓ Step 1 @ 6:10 PM → Step 2 @ 6:16 PM → Step 3 @ 6:20 PM - VALID
-✗ Step 1 @ 6:20 PM → Step 2 @ 6:10 PM - SEQUENCE VIOLATION
-```
-
-### 4. Objective Evidence Completeness
-```
-✓ Screenshot is full-screen capture
-✓ Date and timestamp visible
-✓ All required fields present
-```
-
----
-
-## How to Use
-
-### Installation
 ```bash
-# Install Python dependencies
-pip install pytesseract pillow anthropic openai
-
-# Install Tesseract OCR
-# Windows: https://github.com/UB-Mannheim/tesseract/wiki
-# Mac: brew install tesseract
-# Linux: sudo apt-get install tesseract-ocr
+pip install -r requirements.txt
 ```
 
-### Quick Test Run
-```bash
-python run_validation_example.py
-```
+## Usage
 
-This will demonstrate:
-- 4 sample test steps
-- 2 passing validations
-- 2 failing validations
-- 1 sequence violation
-- Complete JSON report generation
+1.  **Prepare Input**: Ensure test execution data is formatted in an Excel sheet (`.xlsx`) matching the Jama Cloud export structure.
+2.  **Execute Validation**: Run the automation suite.
+    ```bash
+    python run_automation.py
+    ```
+3.  **Review Results**: The system generates a formatted `validated_*.xlsx` report and a detailed `excel_validation_report.json` for technical analysis.
 
-### Real Usage Workflow
+## Roadmap
 
-```python
-from jama_test_validator import JamaTestValidator, TestStep
-from screenshot_analyzer import ScreenshotAnalyzer
-
-# 1. Create validator
-validator = JamaTestValidator()
-
-# 2. Analyze screenshots (if using OCR)
-analyzer = ScreenshotAnalyzer(method="tesseract")
-extracted = analyzer.analyze_screenshot("screenshot.png")
-
-# 3. Create test step with extracted data
-step = TestStep(
-    step_number="1.1",
-    action="User logs into Salesforce",
-    expected_result="User shall log into Salesforce",
-    actual_result="User logged in successfully",
-    objective_evidence_required=True,
-    screenshot_paths=["screenshot.png"],
-    extracted_data=extracted
-)
-
-# 4. Add to validator and run
-validator.add_test_step(step)
-report = validator.generate_report()
-```
-
----
-
-## Sample Output Report
-
-```json
-{
-  "total_steps": 4,
-  "passed": 2,
-  "failed": 2,
-  "warnings": 1,
-  "sequence_violations": [
-    "⚠ SEQUENCE VIOLATION: Step 2.1 (18:20) executed AFTER Step 3.1 (18:10)"
-  ],
-  "step_details": [
-    {
-      "step_number": "1.1",
-      "action": "User must have access to Salesforce",
-      "status": "PASS",
-      "notes": [
-        "✓ Action matches Expected and Actual results",
-        "✓ Salesforce URL verified: ga-healthcare.test.sandbox",
-        "✓ Tester ID verified: Manish",
-        "✓ Timestamp found: 2026-02-03 18:16:00"
-      ]
-    },
-    {
-      "step_number": "2.1",
-      "action": "System displays Work Order",
-      "status": "FAIL",
-      "notes": [
-        "✗ Action does NOT match Expected result",
-        "✓ Work Order verified: WO-738387"
-      ]
-    }
-  ]
-}
-```
----
-## Success Metrics
-
-### Month 1 Target
-- 90%+ accuracy on validation
-- Reduce manual validation time by 70%
-- Zero false positives on sequence violations
-
-### Ongoing KPIs
-- Time saved per test script
-- Number of mismatches caught
-- Sequence violations detected
-- Test coverage percentage
-
----
-
-## Technical Architecture
-
-```
-┌─────────────────────────────────────────────────────────┐
-│                  JAMA CONNECT                           │
-│  (Test Cases + Screenshots + Test Results)             │
-└────────────────────┬────────────────────────────────────┘
-                     │
-                     ▼
-┌─────────────────────────────────────────────────────────┐
-│           DATA EXTRACTION LAYER                         │
-│  • Export test case data (Action/Expected/Actual)      │
-│  • Download objective evidence screenshots             │
-└────────────────────┬────────────────────────────────────┘
-                     │
-                     ▼
-┌─────────────────────────────────────────────────────────┐
-│        SCREENSHOT ANALYSIS ENGINE                       │
-│  • Tesseract OCR (offline, fast)                       │
-│  • AI Vision API (Claude/GPT-4, accurate)              │
-│  • Extract: URL, Tester ID, WO#, Timestamp             │
-└────────────────────┬────────────────────────────────────┘
-                     │
-                     ▼
-┌─────────────────────────────────────────────────────────┐
-│           VALIDATION ENGINE                             │
-│  1. Action-Expected-Actual matching                     │
-│  2. Screenshot data verification                        │
-│  3. Timestamp sequence checking                         │
-│  4. Completeness validation                             │
-└────────────────────┬────────────────────────────────────┘
-                     │
-                     ▼
-┌─────────────────────────────────────────────────────────┐
-│            REPORT GENERATION                            │
-│  • JSON structured report                               │
-│  • HTML/PDF reports (future)                            │
-│  • Email notifications (future)                         │
-└─────────────────────────────────────────────────────────┘
-```
----
-## Key Design Decisions
-### Why Python?
-- Rich ecosystem for OCR (Tesseract, EasyOCR)
-- Easy AI API integration (Anthropic, OpenAI)
-- Simple data manipulation (pandas, regex)
-- Fast prototyping and iteration
-### Why Modular Architecture?
-- `jama_test_validator.py`: Pure validation logic (reusable)
-- `screenshot_analyzer.py`: Pluggable OCR/AI backends
-- Easy to swap Tesseract → Claude Vision → GPT-4 Vision
-### Why JSON Reports?
-- Machine-readable for further processing
-- Easy integration with dashboards/APIs
-- Can convert to HTML/PDF later
-- Structured data for analytics
----
-### Working with the Framework
-- Review `validation_report.json` for test status
-- Check `sequence_violations` array for critical issues
-- Monitor `passed` vs `failed` ratio
-- Provide feedback on validation accuracy
-### For Testers
-- Review validation notes for each step
-- Fix any mismatches flagged by automation
-- Re-run validation after corrections
-- No need to create defects - automation just reports
-- Enhance OCR accuracy with better preprocessing
-- Add new validation rules as needed
-- Integrate Jama API for auto-fetch
-- Build dashboard for real-time monitoring
-
----
-
-## Files Included
-
-```
-jama-automation/
-├── jama_test_validator.py       # Core validation engine (330 lines)
-├── screenshot_analyzer.py        # OCR/AI vision module (270 lines)
-├── run_validation_example.py     # End-to-end demo (330 lines)
-├── validation_report.json        # Sample output report
-├── README.md                     # Installation & usage guide
-└── PROJECT_SUMMARY.md            # This document
-```
----
-
-## Support & Questions
-
-For technical questions or issues:
-1. Check `README.md` troubleshooting section
-2. Review `run_validation_example.py` for usage patterns
-3. Reach out to Rohan with specific validation concerns
-
----
-
-## Learning Resources
-
-### Python Automation
-- Python Regex: https://docs.python.org/3/library/re.html
-- Tesseract OCR: https://github.com/tesseract-ocr/tesseract
-
-### AI Vision APIs
-- Claude API Docs: https://docs.anthropic.com
-- OpenAI Vision: https://platform.openai.com/docs/guides/vision
-
-### Test Automation
-- Jama API Docs: https://dev.jamasoftware.com
-- Selenium (for future Salesforce UI automation)
-
----
-
-**Project Status**: READY FOR TESTING  
-**Level**: High (framework is solid, needs real-world testing)
-
----
-
-**Document Created**: February 10, 2026  
-**Version**: 1.0  
-**Last Updated**: February 10, 2026
+*   **REST API Integration**: Direct connection to Jama Connect for automated data ingestion and result upload.
+*   **AI Vision Integration**: Connection to OCR/Vision models (Azure Form Recognizer, AWS Textract, or OpenAI Vision) for automated evidence reading.
+*   **Identity Verification**: Automated cross-match between Active Directory and Tester IDs in evidence metadata.
