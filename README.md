@@ -1,11 +1,7 @@
 # JAMA TEST VALIDATION AUTOMATION - PROJECT SUMMARY
 
-## Executive Summary
-
 **Project**: Automated validation of Salesforce Part Request test executions in Jama Connect
 ---
-
-## What This Automation Does
 
 ### Problem Statement
 Manual validation of test execution results is:
@@ -20,11 +16,7 @@ Automated Python framework that:
 2. **Extracts data from screenshots** using OCR/AI Vision (URLs, timestamps, WO#, tester IDs)
 3. **Checks sequential order** ensuring test steps executed chronologically
 4. **Generates detailed reports** highlighting all mismatches and violations
-
 ---
-
-## Deliverables
-
 ### Core Files Provided
 
 1. **jama_test_validator.py** (330 lines)
