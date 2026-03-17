@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+env/
+venv/
+ENV/
+build/
+dist/
+*.egg-info/
+
+# Excel & Data (Generated artifacts)
+jama_test_cases.xlsx
+validated_*.xlsx
+*.json
+*.log
+
+# Evidence
+evidence/
+
+# Environment and IDE
+.env
+.vscode/
+.idea/
+.DS_Store
+*.swp
