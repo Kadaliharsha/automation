@@ -1,13 +1,18 @@
 import re
 import json
 
+import docx2txt
+
 def parse_jama_text_export(filepath: str):
     """
     Programmatically extracts Test Steps from an unstructured Jama Word Export.
     Relies on structural heuristics rather than hardcoded text.
     """
-    with open(filepath, 'r', encoding='utf-8') as f:
-        text = f.read()
+    if filepath.endswith('.docx'):
+        text = docx2txt.process(filepath)
+    else:
+        with open(filepath, 'r', encoding='utf-8') as f:
+            text = f.read()
 
     # Split the document into blocks separated by empty lines
     blocks = text.split('\n\n')
