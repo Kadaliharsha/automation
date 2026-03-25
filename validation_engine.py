@@ -77,7 +77,7 @@ class JamaTestValidator:
         
         if expected_match and actual_match:
             test_step.validation_notes.append("[PASS] Action context matches Expected and Actual results")
-            test_step.validation_notes.append(f"Mapped Keywords: {', '.join(fully_mapped)}")
+            test_step.validation_notes.append(f"Core Business Terms Mapped: {', '.join(list(fully_mapped)[:5])}")
             return True
 
         if not expected_match:
@@ -180,11 +180,16 @@ class JamaTestValidator:
         return re.sub(r'\s+', ' ', text.strip())
     
     def _extract_keywords(self, text: str) -> List[str]:
+        # Expanded stop words to remove generic functional testing terms
         stop_words = {'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 
                       'of', 'with', 'by', 'from', 'is', 'was', 'are', 'were', 'be', 'been',
                       'shall', 'must', 'should', 'have', 'has', 'had', 'user', 'tester',
-                      'system', 'this', 'that', 'it', 'as'}
-        return [w for w in text.split() if w not in stop_words and len(w) > 2]
+                      'system', 'this', 'that', 'it', 'as', 'verify', 'click', 'clicks', 
+                      'able', 'page', 'tab', 'window', 'button', 'navigate', 'navigates',
+                      'return', 'returned', 'shows', 'shown', 'display', 'displayed', 'see',
+                      'into', 'back', 'record', 'mode', 'details', 'application'}
+        keywords = [w for w in text.split() if w not in stop_words and len(w) > 2]
+        return list(set(keywords))
     
     def _find_in_text(self, text: str, term: str) -> bool:
         return self._normalize_text(term) in self._normalize_text(text)
